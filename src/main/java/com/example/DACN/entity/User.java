@@ -15,7 +15,9 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Data
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -43,6 +45,8 @@ public class User {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Role role;
 
     @Column(name = "is_email_verified", nullable = false)
@@ -63,23 +67,52 @@ public class User {
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<UserAddress> addresses;
 
     @OneToMany(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<Shop> shops;
 
     @OneToMany(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<Wishlist> wishlists;
 
     @OneToMany(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<Order> orders;
 
     @OneToMany(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<Review> reviews;
 
     @OneToOne(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Cart cart;
 
     @OneToOne(mappedBy = "user")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Wallet wallet;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof User))
+            return false;
+        User user = (User) o;
+        return userId != null && userId.equals(user.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

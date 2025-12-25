@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -114,7 +114,8 @@ class PublicProductServiceTest {
                 List<Product> products = Arrays.asList(product1, product2);
                 Page<Product> productPage = new PageImpl<>(products);
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(productPage);
                 when(productMapper.toProductListItemResponse(product1)).thenReturn(productResponse1);
                 when(productMapper.toProductListItemResponse(product2)).thenReturn(productResponse2);
@@ -129,7 +130,8 @@ class PublicProductServiceTest {
                 assertThat(result.getData().get(0).getProductId()).isEqualTo(1L);
                 assertThat(result.getData().get(1).getProductId()).isEqualTo(2L);
 
-                verify(productRepository).findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class));
+                verify(productRepository).findProductsWithFilters(any(), any(), any(), any(), eq("Active"),
+                                any(Pageable.class));
                 verify(productMapper, times(2)).toProductListItemResponse(any(Product.class));
         }
 
@@ -140,7 +142,8 @@ class PublicProductServiceTest {
                 List<Product> products = Arrays.asList(product1);
                 Page<Product> productPage = new PageImpl<>(products);
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(productPage);
                 when(productMapper.toProductListItemResponse(product1)).thenReturn(productResponse1);
 
@@ -155,6 +158,7 @@ class PublicProductServiceTest {
                 assertThat(result.getData()).hasSize(1);
 
                 verify(productRepository).findProductsWithFilters(eq(minPrice), eq(maxPrice), isNull(), isNull(),
+                                eq("Active"),
                                 any(Pageable.class));
         }
 
@@ -165,7 +169,8 @@ class PublicProductServiceTest {
                 List<Product> products = Arrays.asList(product1, product2);
                 Page<Product> productPage = new PageImpl<>(products);
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(productPage);
                 when(productMapper.toProductListItemResponse(any(Product.class)))
                                 .thenReturn(productResponse1, productResponse2);
@@ -177,7 +182,7 @@ class PublicProductServiceTest {
                 assertThat(result).isNotNull();
                 assertThat(result.getData()).hasSize(2);
 
-                verify(productRepository).findProductsWithFilters(isNull(), isNull(), eq(1L), isNull(),
+                verify(productRepository).findProductsWithFilters(isNull(), isNull(), eq(1L), isNull(), eq("Active"),
                                 any(Pageable.class));
         }
 
@@ -188,7 +193,8 @@ class PublicProductServiceTest {
                 List<Product> products = Arrays.asList(product1, product2);
                 Page<Product> productPage = new PageImpl<>(products);
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(productPage);
                 when(productMapper.toProductListItemResponse(any(Product.class)))
                                 .thenReturn(productResponse1, productResponse2);
@@ -200,7 +206,7 @@ class PublicProductServiceTest {
                 assertThat(result).isNotNull();
                 assertThat(result.getData()).hasSize(2);
 
-                verify(productRepository).findProductsWithFilters(isNull(), isNull(), isNull(), eq(1L),
+                verify(productRepository).findProductsWithFilters(isNull(), isNull(), isNull(), eq(1L), eq("Active"),
                                 any(Pageable.class));
         }
 
@@ -211,7 +217,8 @@ class PublicProductServiceTest {
                 List<Product> products = Arrays.asList(product2, product1); // product2 has higher soldCount
                 Page<Product> productPage = new PageImpl<>(products);
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(productPage);
                 when(productMapper.toProductListItemResponse(any(Product.class)))
                                 .thenReturn(productResponse2, productResponse1);
@@ -223,7 +230,7 @@ class PublicProductServiceTest {
                 assertThat(result).isNotNull();
                 assertThat(result.getData()).hasSize(2);
 
-                verify(productRepository).findProductsWithFilters(any(), any(), any(), any(),
+                verify(productRepository).findProductsWithFilters(any(), any(), any(), any(), eq("Active"),
                                 argThat(pageable -> pageable.getSort().toString().contains("soldCount")));
         }
 
@@ -233,7 +240,8 @@ class PublicProductServiceTest {
                 // Given
                 Page<Product> emptyPage = new PageImpl<>(Collections.emptyList());
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(emptyPage);
 
                 // When
@@ -254,7 +262,8 @@ class PublicProductServiceTest {
                 List<Product> products = Arrays.asList(product1, product2);
                 Page<Product> productPage = new PageImpl<>(products, Pageable.ofSize(1), 2);
 
-                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), any(Pageable.class)))
+                when(productRepository.findProductsWithFilters(any(), any(), any(), any(), anyString(),
+                                any(Pageable.class)))
                                 .thenReturn(productPage);
                 when(productMapper.toProductListItemResponse(any(Product.class)))
                                 .thenReturn(productResponse1, productResponse2);

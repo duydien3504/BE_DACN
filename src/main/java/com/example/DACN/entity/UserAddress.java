@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_addresses")
-@Data
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -25,6 +27,8 @@ public class UserAddress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     User user;
 
     @Column(name = "recipient_name", nullable = false, length = 100)
@@ -54,4 +58,19 @@ public class UserAddress {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof UserAddress))
+            return false;
+        UserAddress that = (UserAddress) o;
+        return userAddressId != null && userAddressId.equals(that.userAddressId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

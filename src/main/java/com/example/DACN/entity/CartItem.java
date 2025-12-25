@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cart_items")
-@Data
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -25,10 +27,14 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Product product;
 
     @Column(nullable = false)
@@ -37,4 +43,19 @@ public class CartItem {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof CartItem))
+            return false;
+        CartItem cartItem = (CartItem) o;
+        return cartItemId != null && cartItemId.equals(cartItem.cartItemId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

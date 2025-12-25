@@ -15,7 +15,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "products")
-@Data
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -28,10 +30,14 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Shop shop;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Category category;
 
     @Column(nullable = false, length = 200)
@@ -64,17 +70,42 @@ public class Product {
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<ProductImage> images;
 
     @OneToMany(mappedBy = "product")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<Wishlist> wishlists;
 
     @OneToMany(mappedBy = "product")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<CartItem> cartItems;
 
     @OneToMany(mappedBy = "product")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<OrderItem> orderItems;
 
     @OneToMany(mappedBy = "product")
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
     Set<Review> reviews;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Product))
+            return false;
+        Product product = (Product) o;
+        return productId != null && productId.equals(product.productId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

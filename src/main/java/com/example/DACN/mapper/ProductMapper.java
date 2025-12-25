@@ -5,6 +5,7 @@ import com.example.DACN.dto.response.DeleteProductResponse;
 import com.example.DACN.dto.response.ProductDetailResponse;
 import com.example.DACN.dto.response.ProductListItemResponse;
 import com.example.DACN.dto.response.UpdateProductResponse;
+import com.example.DACN.dto.response.UpdateProductStatusResponse;
 import com.example.DACN.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -37,4 +38,9 @@ public interface ProductMapper {
     @Mapping(target = "categoryName", source = "category.name")
     @Mapping(target = "images", ignore = true)
     ProductDetailResponse toProductDetailResponse(Product product);
+
+    @Mapping(target = "productId", source = "productId")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "message", constant = "Product status updated successfully")
+    UpdateProductStatusResponse toUpdateProductStatusResponse(Product product);
 }

@@ -3,12 +3,14 @@ package com.example.DACN.service;
 import com.example.DACN.constant.RoleConstants;
 import com.example.DACN.dto.request.CreateProductRequest;
 import com.example.DACN.dto.request.UpdateProductRequest;
+import com.example.DACN.dto.request.UpdateProductStatusRequest;
 import com.example.DACN.dto.response.CreateProductResponse;
 import com.example.DACN.dto.response.DeleteProductResponse;
 import com.example.DACN.dto.response.ProductDetailResponse;
 import com.example.DACN.dto.response.ProductListItemResponse;
 import com.example.DACN.dto.response.ProductListResponse;
 import com.example.DACN.dto.response.UpdateProductResponse;
+import com.example.DACN.dto.response.UpdateProductStatusResponse;
 import com.example.DACN.entity.*;
 import com.example.DACN.exception.ResourceNotFoundException;
 import com.example.DACN.exception.UnauthorizedException;
@@ -276,7 +278,7 @@ public class ProductService {
 
         // Get products with filters
         Page<Product> productPage = productRepository.findProductsWithFilters(
-                minPrice, maxPrice, categoryId, shopId, pageable);
+                minPrice, maxPrice, categoryId, shopId, "Active", pageable);
 
         // Map to response
         List<ProductListItemResponse> productList = productPage.getContent().stream()
@@ -340,5 +342,26 @@ public class ProductService {
                 .data(productList)
                 .totalPage(totalPages)
                 .build();
+    }
+
+    public UpdateProductStatusResponse updateProductStatus(Long productId, UpdateProductStatusRequest request) {
+        log.info("Updating status for product ID: {}", productId);
+
+        // Find product by ID
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (Boolean.TRUE.equals(product.getHasDeleted())) {
+            throw new ResourceNotFoundException("Product not found");
+        }
+
+        // Update status
+        product.setStatus(request.getStatus());
+
+        // Save updated product
+        Product updatedProduct = productRepository.save(product);
+        log.info("Product status updated to {} for ID: {}", updatedProduct.getStatus(), updatedProduct.getProductId());
+
+        return productMapper.toUpdateProductStatusResponse(updatedProduct);
     }
 }
