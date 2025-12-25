@@ -1,0 +1,90 @@
+server:
+  port: 7979
+
+spring:
+  application:
+    name: DACN
+  
+  datasource:
+    url: jdbc:mysql://localhost:3307/shoppingonline?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: YOUR_DB_PASSWORD
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+    # Connection pool configuration (HikariCP)
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Email Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: YOUR_EMAIL@gmail.com
+    password: YOUR_EMAIL_APP_PASSWORD
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+      
+  # JPA/Hibernate configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+# JWT Configuration
+jwt:
+  secret: YOUR_JWT_SECRET
+  expiration: 86400000 # 24 hours in milliseconds
+  refresh-expiration: 604800000 # 7 days in milliseconds
+
+# OpenAPI/Swagger Configuration
+openapi:
+  dev-url: http://localhost:7979
+  prod-url: ${PROD_URL:}
+
+# CORS Configuration
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:4200
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: "*"
+  exposed-headers: Authorization,Content-Type
+  allow-credentials: true
+  max-age: 3600
+
+# SpringDoc Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: YOUR_CLOUD_NAME
+  api-key: YOUR_API_KEY
+  api-secret: YOUR_API_SECRET
+
+paypal:
+  client-id: YOUR_PAYPAL_CLIENT_ID
+  client-secret: YOUR_PAYPAL_CLIENT_SECRET
+  webhook-id: YOUR_PAYPAL_WEBHOOK_ID
+  mode: sandbox
