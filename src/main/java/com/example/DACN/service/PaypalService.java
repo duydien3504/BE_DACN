@@ -140,6 +140,82 @@ public class PaypalService {
     }
 
     /**
+     * Create PayPal order for customer order payment
+     */
+    public Map<String, String> createOrder(BigDecimal amountVND, Long orderId) {
+        try {
+            String accessToken = getAccessToken();
+            String apiBase = getApiBase();
+            String url = apiBase + "/v2/checkout/orders";
+
+            // Convert VND to USD
+            BigDecimal amountUSD = convertVNDtoUSD(amountVND);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(accessToken);
+
+            Map<String, Object> orderRequest = new HashMap<>();
+            orderRequest.put("intent", "CAPTURE");
+
+            Map<String, Object> purchaseUnit = new HashMap<>();
+            Map<String, Object> amount = new HashMap<>();
+            amount.put("currency_code", "USD");
+            amount.put("value", amountUSD.toString());
+            purchaseUnit.put("amount", amount);
+            purchaseUnit.put("description", "Order #" + orderId + " Payment");
+            purchaseUnit.put("custom_id", orderId.toString()); // Important for webhook processing
+
+            orderRequest.put("purchase_units", Collections.singletonList(purchaseUnit));
+
+            Map<String, Object> applicationContext = new HashMap<>();
+            // Include orderId in return URL for payment capture
+            applicationContext.put("return_url",
+                    "http://localhost:7979/api/v1/payment/paypal/success?orderId=" + orderId);
+            applicationContext.put("cancel_url", "http://localhost:7979/api/v1/payment/paypal/cancel");
+            orderRequest.put("application_context", applicationContext);
+
+            String requestBody = objectMapper.writeValueAsString(orderRequest);
+            HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+            if (response.getStatusCode() == HttpStatus.CREATED && response.getBody() != null) {
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                String paypalOrderId = jsonNode.get("id").asText();
+
+                // Extract approval URL
+                String approvalUrl = null;
+                JsonNode links = jsonNode.get("links");
+                if (links != null && links.isArray()) {
+                    for (JsonNode link : links) {
+                        if ("approve".equals(link.get("rel").asText())) {
+                            approvalUrl = link.get("href").asText();
+                            break;
+                        }
+                    }
+                }
+
+                if (approvalUrl == null) {
+                    throw new RuntimeException("Approval URL not found in PayPal response");
+                }
+
+                Map<String, String> result = new HashMap<>();
+                result.put("orderId", paypalOrderId);
+                result.put("approvalUrl", approvalUrl);
+
+                log.info("Successfully created PayPal order for customer order: {}", orderId);
+                return result;
+            } else {
+                throw new RuntimeException("Failed to create PayPal order");
+            }
+        } catch (Exception e) {
+            log.error("Error creating PayPal order for customer order: {}", orderId, e);
+            throw new RuntimeException("Failed to create PayPal order: " + e.getMessage());
+        }
+    }
+
+    /**
      * Verify PayPal webhook signature
      */
     public boolean verifyWebhookSignature(Map<String, String> headers, String requestBody) {

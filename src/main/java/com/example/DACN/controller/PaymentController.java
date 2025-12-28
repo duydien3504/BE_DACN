@@ -1,6 +1,7 @@
 package com.example.DACN.controller;
 
 import com.example.DACN.dto.request.PaypalWebhookRequest;
+import com.example.DACN.service.PaymentService;
 import com.example.DACN.service.ShopService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class PaymentController {
 
     private final ShopService shopService;
+    private final PaymentService paymentService;
 
     @PostMapping("/webhook")
     @Operation(summary = "Handle PayPal webhook", description = "Processes PayPal webhook events for payment completion")
@@ -86,16 +88,109 @@ public class PaymentController {
     }
 
     @GetMapping("/success")
-    @Operation(summary = "PayPal payment success", description = "Handles successful PayPal payment redirect")
-    public ResponseEntity<String> paymentSuccess(@RequestParam("token") String token) {
-        log.info("Payment successful for token: {}", token);
-        return ResponseEntity.ok("Payment successful! You can close this window. Your shop will be approved shortly.");
+    @Operation(summary = "PayPal payment success", description = "Handles successful PayPal payment redirect and captures payment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Payment captured successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid token or order ID"),
+            @ApiResponse(responseCode = "500", description = "Failed to capture payment")
+    })
+    public ResponseEntity<String> paymentSuccess(
+            @RequestParam("token") String token,
+            @RequestParam(value = "orderId", required = false) Long orderId) {
+
+        log.info("Payment successful for token: {}, orderId: {}", token, orderId);
+
+        try {
+            if (orderId != null) {
+                // This is for order payment - capture the payment
+                paymentService.capturePayPalPayment(token, orderId);
+                return ResponseEntity.ok(
+                        "<!DOCTYPE html>" +
+                                "<html>" +
+                                "<head>" +
+                                "  <title>Payment Successful</title>" +
+                                "  <meta charset='UTF-8'>" +
+                                "</head>" +
+                                "<body style='font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;'>"
+                                +
+                                "  <div style='background: white; color: #333; padding: 40px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);'>"
+                                +
+                                "    <div style='font-size: 60px; color: #4CAF50; margin-bottom: 20px;'>✓</div>" +
+                                "    <h1 style='color: #4CAF50; margin: 0 0 20px 0;'>Payment Successful!</h1>" +
+                                "    <p style='font-size: 18px; margin: 20px 0;'>Your order <strong>#" + orderId
+                                + "</strong> has been confirmed.</p>" +
+                                "    <p style='color: #666; margin: 20px 0;'>Thank you for your purchase!</p>" +
+                                "    <p style='color: #999; font-size: 14px;'>This window will close automatically in 3 seconds...</p>"
+                                +
+                                "  </div>" +
+                                "  <script>setTimeout(function(){ window.close(); }, 3000);</script>" +
+                                "</body>" +
+                                "</html>");
+            } else {
+                // This is for shop registration - capture the payment
+                paymentService.captureShopRegistrationPayment(token);
+                return ResponseEntity.ok(
+                        "<!DOCTYPE html>" +
+                                "<html>" +
+                                "<head>" +
+                                "  <title>Payment Successful</title>" +
+                                "  <meta charset='UTF-8'>" +
+                                "</head>" +
+                                "<body style='font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;'>"
+                                +
+                                "  <div style='background: white; color: #333; padding: 40px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);'>"
+                                +
+                                "    <div style='font-size: 60px; color: #4CAF50; margin-bottom: 20px;'>✓</div>" +
+                                "    <h1 style='color: #4CAF50; margin: 0 0 20px 0;'>Payment Successful!</h1>" +
+                                "    <p style='font-size: 18px; margin: 20px 0;'>Your shop registration payment has been confirmed.</p>"
+                                +
+                                "    <p style='color: #666; margin: 20px 0;'>Your shop will be approved shortly!</p>" +
+                                "    <p style='color: #999; font-size: 14px;'>This window will close automatically in 3 seconds...</p>"
+                                +
+                                "  </div>" +
+                                "  <script>setTimeout(function(){ window.close(); }, 3000);</script>" +
+                                "</body>" +
+                                "</html>");
+            }
+        } catch (Exception e) {
+            log.error("Error capturing payment", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    "<!DOCTYPE html>" +
+                            "<html>" +
+                            "<head>" +
+                            "  <title>Payment Error</title>" +
+                            "  <meta charset='UTF-8'>" +
+                            "</head>" +
+                            "<body style='font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;'>"
+                            +
+                            "  <div style='background: white; color: #333; padding: 40px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);'>"
+                            +
+                            "    <div style='font-size: 60px; color: #f44336; margin-bottom: 20px;'>✗</div>" +
+                            "    <h1 style='color: #f44336; margin: 0 0 20px 0;'>Payment Processing Error</h1>" +
+                            "    <p style='font-size: 16px; margin: 20px 0;'>There was an error processing your payment.</p>"
+                            +
+                            "    <p style='color: #666; margin: 20px 0;'>Please contact support for assistance.</p>" +
+                            "    <p style='color: #999; font-size: 14px;'>Error: " + e.getMessage() + "</p>" +
+                            "  </div>" +
+                            "</body>" +
+                            "</html>");
+        }
     }
 
     @GetMapping("/cancel")
     @Operation(summary = "PayPal payment cancelled", description = "Handles cancelled PayPal payment redirect")
     public ResponseEntity<String> paymentCancel(@RequestParam("token") String token) {
         log.info("Payment cancelled for token: {}", token);
-        return ResponseEntity.ok("Payment cancelled. You can try again later.");
+        return ResponseEntity.ok(
+                "<!DOCTYPE html>" +
+                        "<html>" +
+                        "<head><title>Payment Cancelled</title></head>" +
+                        "<body style='font-family: Arial; text-align: center; padding: 50px;'>" +
+                        "<h1 style='color: orange;'>Payment Cancelled</h1>" +
+                        "<p>You have cancelled the payment.</p>" +
+                        "<p>You can try again later.</p>" +
+                        "<script>setTimeout(function(){ window.close(); }, 3000);</script>" +
+                        "</body>" +
+                        "</html>");
     }
 }
