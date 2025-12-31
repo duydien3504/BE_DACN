@@ -53,7 +53,8 @@ public class SecurityConfig {
                                 "/api/v1/categories",
                                 "/api/v1/categories/**",
                                 "/api/v1/products",
-                                "/api/v1/products/**")
+                                "/api/v1/products/**",
+                                "/api/v1/vouchers/**")
                         .permitAll()
                         // Admin endpoints
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

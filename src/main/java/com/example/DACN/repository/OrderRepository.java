@@ -16,23 +16,25 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    Optional<Order> findByOrderIdAndHasDeletedFalse(Long orderId);
+        Optional<Order> findByOrderIdAndHasDeletedFalse(Long orderId);
 
-    Page<Order> findByUserUserIdAndHasDeletedFalse(UUID userId, Pageable pageable);
+        Page<Order> findByUserUserIdAndHasDeletedFalse(UUID userId, Pageable pageable);
 
-    Page<Order> findByShopShopIdAndHasDeletedFalse(Long shopId, Pageable pageable);
+        Page<Order> findByShopShopIdAndHasDeletedFalse(Long shopId, Pageable pageable);
 
-    List<Order> findByUserUserIdAndHasDeletedFalseOrderByCreatedAtDesc(UUID userId);
+        List<Order> findByUserUserIdAndHasDeletedFalseOrderByCreatedAtDesc(UUID userId);
 
-    @Query("SELECT o FROM Order o WHERE o.user.userId = :userId AND o.hasDeleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
-    List<Order> findUserOrdersByDateRange(@Param("userId") UUID userId,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+        List<Order> findByShopShopIdAndHasDeletedFalseOrderByCreatedAtDesc(Long shopId);
 
-    @Query("SELECT o FROM Order o WHERE o.shop.shopId = :shopId AND o.hasDeleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
-    List<Order> findShopOrdersByDateRange(@Param("shopId") Long shopId,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+        @Query("SELECT o FROM Order o WHERE o.user.userId = :userId AND o.hasDeleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+        List<Order> findUserOrdersByDateRange(@Param("userId") UUID userId,
+                        @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 
-    long countByShopShopIdAndHasDeletedFalse(Long shopId);
+        @Query("SELECT o FROM Order o WHERE o.shop.shopId = :shopId AND o.hasDeleted = false AND o.createdAt BETWEEN :startDate AND :endDate")
+        List<Order> findShopOrdersByDateRange(@Param("shopId") Long shopId,
+                        @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
+
+        long countByShopShopIdAndHasDeletedFalse(Long shopId);
 }
