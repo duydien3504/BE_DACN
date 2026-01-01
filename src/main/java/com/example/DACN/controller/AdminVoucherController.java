@@ -2,6 +2,7 @@ package com.example.DACN.controller;
 
 import com.example.DACN.dto.request.CreateVoucherRequest;
 import com.example.DACN.dto.response.CreateVoucherResponse;
+import com.example.DACN.dto.response.DeleteVoucherResponse;
 import com.example.DACN.service.VoucherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,5 +36,19 @@ public class AdminVoucherController {
         CreateVoucherResponse response = voucherService.createPlatformVoucher(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/{voucher_id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete voucher", description = "Soft delete any voucher (platform or shop). Admins can delete any voucher.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Voucher deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Unauthorized - not an admin"),
+            @ApiResponse(responseCode = "404", description = "Voucher not found")
+    })
+    public ResponseEntity<DeleteVoucherResponse> deleteVoucher(@PathVariable("voucher_id") Long voucherId) {
+        DeleteVoucherResponse response = voucherService.deleteVoucherByAdmin(voucherId);
+
+        return ResponseEntity.ok(response);
     }
 }
