@@ -1,7 +1,10 @@
 package com.example.DACN.mapper;
 
 import com.example.DACN.dto.request.CreateVoucherRequest;
+import com.example.DACN.dto.response.CollectVoucherResponse;
 import com.example.DACN.dto.response.CreateVoucherResponse;
+import com.example.DACN.dto.response.DeleteVoucherResponse;
+import com.example.DACN.entity.UserVoucher;
 import com.example.DACN.entity.Voucher;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,4 +25,21 @@ public interface VoucherMapper {
 
     @Mapping(source = "shop.shopId", target = "shopId")
     com.example.DACN.dto.response.VoucherResponse toVoucherResponse(Voucher voucher);
+
+    @Mapping(source = "userVoucherId", target = "userVoucherId")
+    @Mapping(source = "voucher.voucherId", target = "voucherId")
+    @Mapping(source = "voucher.code", target = "code")
+    @Mapping(source = "voucher.discountType", target = "discountType")
+    @Mapping(source = "voucher.discountValue", target = "discountValue")
+    @Mapping(source = "voucher.minOrderValue", target = "minOrderValue")
+    @Mapping(source = "voucher.maxDiscountAmount", target = "maxDiscountAmount")
+    @Mapping(source = "voucher.startDate", target = "startDate")
+    @Mapping(source = "voucher.endDate", target = "endDate")
+    @Mapping(source = "createdAt", target = "collectedAt")
+    @Mapping(target = "message", ignore = true)
+    CollectVoucherResponse toCollectVoucherResponse(UserVoucher userVoucher);
+
+    @Mapping(source = "voucherId", target = "voucherId")
+    @Mapping(target = "message", ignore = true)
+    DeleteVoucherResponse toDeleteVoucherResponse(Voucher voucher);
 }
